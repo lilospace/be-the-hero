@@ -7,8 +7,6 @@ module.exports = {
 
     const [count] = await connection('incidents').count();
 
-
-
     const incidents = await connection('incidents')
       .join('ongs', 'ong_id', '=', 'incidents.ong_id')
       .limit(5)
@@ -19,9 +17,10 @@ module.exports = {
         'ongs.email',
         'ongs.city',
         'ongs.id',
+        'ongs.uf'
       ])
 
-    response.header('X-TOTAL-COUNT', count['count(*)']);
+    response.header('X-total-Count', count['count(*)']);
     return response.json({ incidents });
   },
 
@@ -47,8 +46,13 @@ module.exports = {
     if (incident.ong_id != ong_id) {
       return response.status(401).json({ error: "operation not permitted" });
     }
-    await connection('incidents').where('id', id).delete();
-    return response.status(204).send();
+    try {
+      await connection('incidents').where('id', id).delete();
+      return response.status(204).send();
+    } catch (error) {
+      response.error('erro ao deletar');
+    }
+
   }
 
 
